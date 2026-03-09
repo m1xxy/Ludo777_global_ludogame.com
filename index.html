@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ludo 777 | Global Multiplayer, Real Cash Rewards</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&family=Poppins:wght@500;700;900&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans:['Inter', 'sans-serif'],
+                        display: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        ludo: {
+                            red: '#FF3B30',
+                            blue: '#007AFF',
+                            green: '#34C759',
+                            yellow: '#FFCC00',
+                            pkGreen: '#01411C',
+                            global: '#6366f1'
+                        }
+                    },
+                    boxShadow: {
+                        'ios': '0 10px 30px rgba(0,0,0,0.1), 0 1px 8px rgba(0,0,0,0.05)',
+                        'ios-hover': '0 20px 40px rgba(0,0,0,0.15), 0 2px 10px rgba(0,0,0,0.1)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- GSAP (Core) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        /* Base Styles & iOS Reset */
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            background-color: #f5f5f7;
+            scroll-behavior: smooth;
+        }
+
+        /* Fixed 3D Canvas */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        /* Glassmorphism / iOS Style */
+        .glass {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+        
+        .glass-dark {
+            background: rgba(20, 20, 20, 0.75);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Global/Cultural Motif Overlay */
+        .world-pattern {
+            position: relative;
+        }
+        .world-pattern::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: radial-gradient(#007AFF 1px, transparent 1px), radial-gradient(#34C759 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            opacity: 0.04;
+            z-index: -1;
+            border-radius: inherit;
+        }
+
+        /* Custom Logo Typography */
+        .logo-text {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 900;
+            font-size: 3.5rem;
+            letter-spacing: -1px;
+            text-transform: uppercase;
+            position: relative;
+            display: inline-block;
+            text-shadow: 2px 2px 0 #fff, -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 0px 8px 15px rgba(0,0,0,0.3);
+        }
+        .logo-ludo {
+            background: linear-gradient(90deg, #FF3B30 25%, #007AFF 25% 50%, #34C759 50% 75%, #FFCC00 75%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .logo-777 {
+            color: #FFCC00;
+            text-shadow: 0px 4px 10px rgba(255, 204, 0, 0.6), 2px 2px 0 #B38600;
+        }
+
+        /* iOS Buttons */
+        .btn-ios {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 28px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            border-radius: 999px;
+            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            cursor: pointer;
+            box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.1);
+        }
+        .btn-ios:active {
+            transform: scale(0.96);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #34C759, #248A3D);
+            color: white;
+        }
+        .btn-primary:hover {
+            box-shadow: 0 6px 20px rgba(52, 199, 89, 0.4);
+            transform: translateY(-2px);
+        }
+        .btn-dark {
+            background: linear-gradient(135deg, #1c1c1e, #000000);
+            color: white;
+        }
+        .btn-dark:hover {
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* Floating Animation */
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        /* Currency Marquee */
+        .marquee-container {
+            overflow: hidden;
+            white-space: nowrap;
+            width: 100%;
+            mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+            -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+        }
+        .marquee-content {
+            display: inline-block;
+            animation: marquee 20s linear infinite;
+        }
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* Grid Background */
+        .ludo-grid {
+            background-size: 60px 60px;
+            background-image: 
+                linear-gradient(to right, rgba(0,0,0,0.04) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0,0,0,0.04) 1px, transparent 1px);
+        }
+    </style>
+</head>
+<body class="text-gray-900 antialiased selection:bg-ludo-blue selection:text-white">
+
+    <!-- 3D Background Canvas -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 p-4 transition-all duration-300">
+        <div class="max-w-7xl mx-auto glass rounded-full px-4 py-3 md:px-6 flex justify-between items-center shadow-ios">
+            <div class="flex items-center gap-3">
+                <!-- User Uploaded Logo (Ensure file is named 'logo.jpg') -->
+                <img src="logo.jpg" alt="Ludo 777 Logo" class="w-10 h-10 md:w-12 md:h-12 rounded-[0.8rem] shadow-sm border-2 border-white object-cover bg-white" onerror="this.src='https://placehold.co/100x100/FFCC00/fff?text=L777'">
+                
+                <div class="text-xl md:text-2xl font-black font-display tracking-tight flex items-baseline">
+                    <span style="color:#FF3B30">L</span>
+                    <span style="color:#007AFF">U</span>
+                    <span style="color:#34C759">D</span>
+                    <span style="color:#FFCC00">O</span>
+                    <span class="ml-1 text-yellow-500 drop-shadow-md">777</span>
+                </div>
+            </div>
+            <div class="hidden lg:flex gap-8 font-semibold text-sm text-gray-700">
+                <a href="#about" class="hover:text-ludo-blue transition-colors">How It Works</a>
+                <a href="#withdraw" class="hover:text-ludo-blue transition-colors">Global Cashout</a>
+                <a href="#ball-stack" class="hover:text-ludo-blue transition-colors">Ball Stack Mini</a>
+            </div>
+            <div class="flex gap-2">
+                <button class="btn-ios btn-primary px-4 py-2 md:px-5 text-sm download-btn hidden sm:flex">Download</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="relative pt-40 pb-16 lg:pt-48 lg:pb-24 px-6 ludo-grid min-h-[95vh] flex items-center justify-center overflow-hidden">
+        <div class="max-w-5xl mx-auto text-center relative z-10 gs-reveal">
+            
+            <!-- Hero Logo -->
+            <div class="mb-6 floating flex flex-col items-center justify-center">
+                <!-- Large version of User Logo -->
+                <div class="relative">
+                    <div class="absolute inset-0 bg-yellow-400 blur-2xl opacity-40 rounded-full"></div>
+                    <img src="logo.jpg" alt="Ludo 777 Logo" class="relative w-36 h-36 md:w-44 md:h-44 mb-2 rounded-[2.5rem] shadow-ios-hover border-4 border-white object-cover bg-white" onerror="this.src='https://placehold.co/200x200/FFCC00/fff?text=LUDO+777'">
+                </div>
+                
+                <h1 class="logo-text mt-4">
+                    <span class="logo-ludo block text-5xl md:text-7xl mb-1">GLOBAL</span>
+                    <span class="logo-777 text-4xl md:text-6xl">LUDO 777</span>
+                </h1>
+                <div class="mt-4 inline-block bg-gradient-to-r from-ludo-blue to-purple-500 text-white font-bold font-display uppercase tracking-widest px-8 py-2 rounded-full shadow-lg border-2 border-white/50 text-lg md:text-xl">
+                    Play & Win Real Money!
+                </div>
+            </div>
+            
+            <p class="mt-6 text-lg md:text-xl text-gray-800 font-medium max-w-2xl mx-auto leading-relaxed glass p-6 rounded-3xl shadow-ios">
+                The ultimate global multiplayer board game. 
+                <span class="text-ludo-blue font-bold">Play with coins</span> against players worldwide, and <span class="text-ludo-green font-bold">withdraw real cash</span> instantly in USD, EUR, PKR, or Crypto!
+            </p>
+
+            <!-- OS Download Buttons -->
+            <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4">
+                <!-- Android Download Button -->
+                <button class="btn-ios btn-primary text-lg px-8 py-4 w-full sm:w-auto download-btn flex items-center justify-center gap-3">
+                    <svg class="w-7 h-7" viewBox="0 0 24 24" fill="currentColor"><path d="M17.52 9.17l1.7-2.94c.15-.26.06-.59-.2-.74-.26-.15-.59-.06-.74.2L16.5 8.7c-1.3-.62-2.8-.97-4.4-.97-1.6 0-3.1.35-4.4.97L5.92 5.69c-.15-.26-.48-.35-.74-.2-.26.15-.35.48-.2.74l1.7 2.94C3.4 11.1 1.2 14.33 1 18.2h22c-.2-3.87-2.4-7.1-5.68-9.03zM7 14.97c-.69 0-1.25-.56-1.25-1.25S6.31 12.47 7 12.47s1.25.56 1.25 1.25-.56 1.25-1.25 1.25zm10 0c-.69 0-1.25-.56-1.25-1.25s.56-1.25 1.25-1.25 1.25.56 1.25 1.25-.56 1.25-1.25 1.25z"/></svg>
+                    Download for Android
+                </button>
+                
+                <!-- iOS Download Button -->
+                <button class="btn-ios btn-dark text-lg px-8 py-4 w-full sm:w-auto download-btn flex items-center justify-center gap-3">
+                    <svg class="w-7 h-7" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.61 1.54-1.53 2.99-2.53 4.08zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.43 2.35-1.95 4.34-3.74 4.25z"/></svg>
+                    Download for iOS
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- How to Play & Earn Section -->
+    <section id="about" class="py-20 px-6 relative world-pattern">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16 gs-reveal">
+                <h2 class="text-4xl md:text-5xl font-display font-bold text-gray-900 mb-4">From the Board to your <span class="text-ludo-blue">Bank</span></h2>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">A seamless blend of classic gameplay and modern finance. Win matches, collect coins, and convert them to real cash.</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Step 1 -->
+                <div class="glass p-8 rounded-[2rem] shadow-ios hover:shadow-ios-hover transition-all gs-reveal border-t-4 border-t-ludo-blue">
+                    <div class="w-16 h-16 rounded-full bg-ludo-blue/10 flex items-center justify-center mb-6">
+                        <span class="text-3xl">🌍</span>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3 text-gray-900">1. Play Globally</h3>
+                    <p class="text-gray-600 leading-relaxed">Join matches using your in-game coins. Challenge players from New York, London, Dubai, or Lahore!</p>
+                </div>
+                
+                <!-- Step 2 -->
+                <div class="glass p-8 rounded-[2rem] shadow-ios hover:shadow-ios-hover transition-all gs-reveal border-t-4 border-t-ludo-yellow" style="transition-delay: 100ms;">
+                    <div class="w-16 h-16 rounded-full bg-ludo-yellow/10 flex items-center justify-center mb-6">
+                        <span class="text-3xl">🏆</span>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3 text-gray-900">2. Win Big</h3>
+                    <p class="text-gray-600 leading-relaxed">Defeat your opponents and clear the board to multiply your coins. Winnings are credited instantly to your secure vault.</p>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="glass p-8 rounded-[2rem] shadow-ios hover:shadow-ios-hover transition-all gs-reveal border-t-4 border-t-ludo-green" style="transition-delay: 200ms;">
+                    <div class="w-16 h-16 rounded-full bg-ludo-green/10 flex items-center justify-center mb-6">
+                        <span class="text-3xl">💸</span>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3 text-gray-900">3. Cash Out Anywhere</h3>
+                    <p class="text-gray-600 leading-relaxed">Convert coins to USD, EUR, PKR, or Crypto. Fast payouts to PayPal, Bank Transfer, EasyPaisa, or Binance.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Global Economy & Cultural Section -->
+    <section id="withdraw" class="py-20 px-6">
+        <div class="max-w-6xl mx-auto glass bg-white/80 rounded-[3rem] p-8 md:p-14 shadow-ios relative overflow-hidden gs-reveal">
+            <!-- Decorative Elements -->
+            <div class="absolute top-[-100px] right-[-100px] w-96 h-96 bg-blue-500 rounded-full blur-[100px] opacity-20"></div>
+            <div class="absolute bottom-[-100px] left-[-100px] w-96 h-96 bg-green-500 rounded-full blur-[100px] opacity-20"></div>
+
+            <div class="flex flex-col lg:flex-row items-center gap-14 relative z-10">
+                <div class="flex-1">
+                    <div class="inline-block px-4 py-1 rounded-full bg-blue-100 text-sm font-bold tracking-wide text-blue-700 mb-4 border border-blue-200">
+                        MULTI-CURRENCY WALLET
+                    </div>
+                    <h2 class="text-4xl md:text-5xl font-display font-bold text-gray-900 mb-6 leading-tight">
+                        A Global App with <span class="text-ludo-pkGreen underline decoration-wavy decoration-ludo-yellow">Desi Roots</span> 🇵🇰🌍
+                    </h2>
+                    <p class="text-xl text-gray-600 mb-8 leading-relaxed">
+                        Whether you want to withdraw <b>Dollars ($)</b> via PayPal, <b>Crypto (USDT)</b> to Binance, or <b>Rupees (PKR)</b> directly to EasyPaisa and JazzCash, Ludo 777 has you covered worldwide.
+                    </p>
+                    
+                    <!-- Currency Marquee -->
+                    <div class="marquee-container py-2 mb-8 border-y border-gray-200">
+                        <div class="marquee-content flex gap-8 items-center text-xl font-bold text-gray-400">
+                            <span class="text-green-600">💵 USD PayPal</span> •
+                            <span class="text-blue-600">💶 EUR Bank</span> •
+                            <span class="text-purple-600">💷 GBP Stripe</span> •
+                            <span class="text-yellow-500">🪙 USDT Crypto</span> •
+                            <span class="text-ludo-pkGreen">🇵🇰 PKR EasyPaisa</span> •
+                            <span class="text-red-500">🇵🇰 PKR JazzCash</span> •
+                            <span class="text-orange-500">🇮🇳 INR UPI</span> •
+                            <!-- Duplicate for seamless loop -->
+                            <span class="text-green-600">💵 USD PayPal</span> •
+                            <span class="text-blue-600">💶 EUR Bank</span> •
+                            <span class="text-purple-600">💷 GBP Stripe</span> •
+                            <span class="text-yellow-500">🪙 USDT Crypto</span>
+                        </div>
+                    </div>
+
+                    <button class="btn-ios btn-primary download-btn w-full sm:w-auto">Start Earning Today</button>
+                </div>
+                
+                <div class="flex-1 w-full relative">
+                    <!-- iOS Mockup Frame -->
+                    <div class="w-full max-w-sm mx-auto bg-gray-900 rounded-[3rem] p-3 shadow-2xl border-4 border-gray-800 relative transform transition-transform hover:scale-105 duration-500">
+                        <!-- Dynamic Island Mock -->
+                        <div class="absolute top-5 left-1/2 transform -translate-x-1/2 w-32 h-7 bg-black rounded-full z-20"></div>
+                        <!-- Screen -->
+                        <div class="bg-gray-50 h-[600px] rounded-[2.5rem] overflow-hidden relative flex flex-col p-6 pt-16">
+                            
+                            <!-- App Header -->
+                            <div class="text-center mb-6">
+                                <p class="text-sm font-semibold text-gray-400 uppercase tracking-widest">Available Balance</p>
+                                <h3 class="text-4xl font-display font-black text-gray-900 mt-1">$1,250<span class="text-xl text-gray-500">.00</span></h3>
+                                <p class="text-sm font-medium text-ludo-pkGreen mt-1">≈ Rs. 350,000</p>
+                            </div>
+
+                            <!-- Conversion UI -->
+                            <div class="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 mb-4">
+                                <div class="flex justify-between items-center mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center text-xl">🪙</div>
+                                        <div>
+                                            <p class="text-xs text-gray-500 font-bold">LUDO COINS</p>
+                                            <p class="font-bold text-gray-900">125,000</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="h-[1px] w-full bg-gray-100 my-2 relative">
+                                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white px-2 text-gray-300 text-xs">▼</div>
+                                </div>
+                                <div class="flex justify-between items-center mt-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-xl">💵</div>
+                                        <div>
+                                            <p class="text-xs text-gray-500 font-bold">YOU GET</p>
+                                            <p class="font-bold text-green-600 text-lg">$1,250.00</p>
+                                        </div>
+                                    </div>
+                                    <select class="bg-gray-50 border border-gray-200 text-sm rounded-lg px-2 py-1 outline-none font-semibold text-gray-700">
+                                        <option>USD</option>
+                                        <option>PKR</option>
+                                        <option>EUR</option>
+                                        <option>USDT</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Methods -->
+                            <p class="text-xs font-bold text-gray-400 mb-3 px-2">WITHDRAW TO</p>
+                            <div class="space-y-2">
+                                <div class="bg-white p-3 rounded-2xl flex items-center justify-between border border-blue-200 border-l-4 border-l-blue-500 shadow-sm cursor-pointer">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center font-bold">P</div>
+                                        <span class="font-bold text-gray-800 text-sm">PayPal</span>
+                                    </div>
+                                    <div class="w-4 h-4 rounded-full border-4 border-blue-500 bg-white"></div>
+                                </div>
+                                <div class="bg-white p-3 rounded-2xl flex items-center justify-between border border-gray-100 hover:border-green-200 cursor-pointer transition-colors">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 bg-green-50 text-green-600 rounded-full flex items-center justify-center font-bold">EP</div>
+                                        <span class="font-bold text-gray-800 text-sm">EasyPaisa (PKR)</span>
+                                    </div>
+                                    <div class="w-4 h-4 rounded-full border-2 border-gray-200"></div>
+                                </div>
+                                <div class="bg-white p-3 rounded-2xl flex items-center justify-between border border-gray-100 hover:border-yellow-200 cursor-pointer transition-colors">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 bg-yellow-50 text-yellow-600 rounded-full flex items-center justify-center text-xs font-bold">₿</div>
+                                        <span class="font-bold text-gray-800 text-sm">Crypto (USDT)</span>
+                                    </div>
+                                    <div class="w-4 h-4 rounded-full border-2 border-gray-200"></div>
+                                </div>
+                            </div>
+                            
+                            <button class="mt-auto w-full bg-black text-white font-bold py-4 rounded-2xl text-sm shadow-lg mb-2">Confirm Cashout</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Special Aesthetic Section: Ball Stack Game -->
+    <section id="ball-stack" class="py-24 px-6 relative bg-gray-900 overflow-hidden">
+        <!-- Abstract gradient blobs for aesthetic look -->
+        <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-600 rounded-full blur-[120px] opacity-40"></div>
+        <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-500 rounded-full blur-[100px] opacity-40"></div>
+
+        <div class="max-w-7xl mx-auto relative z-10 flex flex-col lg:flex-row items-center gap-16 gs-reveal">
+            
+            <!-- 3D/Aesthetic Visual Representation of Ball Stack -->
+            <div class="flex-1 w-full flex justify-center perspective-1000">
+                <div class="relative w-64 h-96 floating">
+                    <!-- Stacked glowing glass balls -->
+                    <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-24 h-24 rounded-full glass-dark border-purple-400 border shadow-[0_0_30px_rgba(168,85,247,0.6)] z-40 flex items-center justify-center text-white font-bold text-2xl">x2</div>
+                    <div class="absolute bottom-16 left-1/2 -translate-x-1/2 w-20 h-20 rounded-full glass-dark border-blue-400 border shadow-[0_0_20px_rgba(59,130,246,0.6)] z-30 flex items-center justify-center text-white font-bold text-xl">x3</div>
+                    <div class="absolute bottom-32 left-1/2 -translate-x-1/2 w-16 h-16 rounded-full glass-dark border-pink-400 border shadow-[0_0_20px_rgba(236,72,153,0.6)] z-20 flex items-center justify-center text-white font-bold text-lg">x5</div>
+                    <div class="absolute bottom-44 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full glass-dark border-yellow-400 border shadow-[0_0_15px_rgba(250,204,21,0.6)] z-10 flex items-center justify-center text-white font-bold">x10</div>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="flex-1 text-white">
+                <div class="inline-block px-4 py-1 rounded-full bg-white/10 border border-white/20 text-sm font-semibold tracking-wide text-purple-300 mb-4 backdrop-blur-md">
+                    NEW MINI-GAME
+                </div>
+                <h2 class="text-4xl md:text-6xl font-display font-black mb-6 leading-tight">
+                    Stack Higher.<br>Earn Bigger.
+                </h2>
+                <p class="text-gray-300 text-lg md:text-xl mb-8 leading-relaxed max-w-lg">
+                    Take a break from the Ludo board with our highly addictive <span class="text-white font-bold">Ball Stack</span> mode. Stack the glowing orbs perfectly, hit massive multipliers, and skyrocket your global coin balance!
+                </p>
+                
+                <ul class="space-y-4 mb-10 text-gray-300">
+                    <li class="flex items-center gap-3">
+                        <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Physics-based stacking mechanics
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Up to 100x Multipliers
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Directly links to your multi-currency wallet
+                    </li>
+                </ul>
+
+                <button class="btn-ios bg-purple-600 text-white hover:bg-purple-500 shadow-[0_0_20px_rgba(147,51,234,0.4)] download-btn w-full sm:w-auto">
+                    Play Ball Stack Now
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA & Footer -->
+    <footer class="bg-white pt-20 pb-10 px-6 border-t border-gray-200">
+        <div class="max-w-4xl mx-auto text-center gs-reveal">
+            <h2 class="text-3xl md:text-4xl font-display font-bold text-gray-900 mb-6">Ready to roll the dice globally?</h2>
+            <p class="text-gray-600 mb-10 text-lg">Join millions of players worldwide earning real money daily on Ludo 777.</p>
+            
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <button class="btn-ios btn-primary text-lg px-8 py-4 w-full sm:w-auto download-btn flex items-center justify-center gap-2">
+                    <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M17.52 9.17l1.7-2.94c.15-.26.06-.59-.2-.74-.26-.15-.59-.06-.74.2L16.5 8.7c-1.3-.62-2.8-.97-4.4-.97-1.6 0-3.1.35-4.4.97L5.92 5.69c-.15-.26-.48-.35-.74-.2-.26.15-.35.48-.2.74l1.7 2.94C3.4 11.1 1.2 14.33 1 18.2h22c-.2-3.87-2.4-7.1-5.68-9.03zM7 14.97c-.69 0-1.25-.56-1.25-1.25S6.31 12.47 7 12.47s1.25.56 1.25 1.25-.56 1.25-1.25 1.25zm10 0c-.69 0-1.25-.56-1.25-1.25s.56-1.25 1.25-1.25 1.25.56 1.25 1.25-.56 1.25-1.25 1.25z"/></svg>
+                    Get Android App
+                </button>
+                <button class="btn-ios btn-dark text-lg px-8 py-4 w-full sm:w-auto download-btn flex items-center justify-center gap-2">
+                    <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.61 1.54-1.53 2.99-2.53 4.08zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.43 2.35-1.95 4.34-3.74 4.25z"/></svg>
+                    Get iOS App
+                </button>
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto mt-20 pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500 font-medium">
+            <p>&copy; 2026 Ludo 777 Global. All rights reserved.</p>
+            <div class="flex flex-wrap justify-center gap-6">
+                <a href="#" class="hover:text-blue-600 transition-colors">Privacy Policy</a>
+                <a href="#" class="hover:text-blue-600 transition-colors">Terms of Service</a>
+                <a href="#" class="hover:text-blue-600 transition-colors">Global Support</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Script Implementations -->
+    <script>
+        // 1. Confetti Animation on Download Button Click
+        const downloadBtns = document.querySelectorAll('.download-btn');
+        downloadBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                // Trigger Confetti
+                confetti({
+                    particleCount: 150,
+                    spread: 80,
+                    origin: { y: 0.6 },
+                    colors:['#FF3B30', '#007AFF', '#34C759', '#FFCC00', '#6366f1']
+                });
+                
+                // Add a small bounce animation to the button
+                gsap.to(btn, { scale: 0.9, duration: 0.1, yoyo: true, repeat: 1 });
+
+                // Simulate redirect after a short delay
+                setTimeout(() => {
+                    alert('Download starting... Get ready to play globally!');
+                }, 800);
+            });
+        });
+
+        // 2. GSAP Scroll Animations
+        gsap.utils.toArray('.gs-reveal').forEach(function(elem) {
+            gsap.fromTo(elem, 
+                { autoAlpha: 0, y: 50 }, 
+                { duration: 1, autoAlpha: 1, y: 0, ease: "power3.out", 
+                  scrollTrigger: {
+                      trigger: elem,
+                      start: "top 85%", // Trigger when top of element hits 85% of viewport
+                  }
+                }
+            );
+        });
+
+        // 3. Three.js Interactive Background
+        function initThreeJS() {
+            const canvas = document.getElementById('bg-canvas');
+            const scene = new THREE.Scene();
+            // Fog to fade elements nicely into the background color (#f5f5f7)
+            scene.fog = new THREE.Fog(0xf5f5f7, 10, 50);
+
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+            
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            dirLight.position.set(10, 20, 10);
+            scene.add(dirLight);
+
+            // Ludo Colors mapping
+            const colors =[0xFF3B30, 0x007AFF, 0x34C759, 0xFFCC00];
+            const meshes =[];
+
+            // Helper to create a Ludo Pawn
+            function createPawn(color) {
+                const group = new THREE.Group();
+                const material = new THREE.MeshPhongMaterial({ 
+                    color: color, 
+                    shininess: 80,
+                    flatShading: false 
+                });
+                
+                const cylinderGeo = new THREE.CylinderGeometry(0.8, 1.2, 2, 32);
+                const base = new THREE.Mesh(cylinderGeo, material);
+                base.position.y = -1;
+                group.add(base);
+
+                const sphereGeo = new THREE.SphereGeometry(0.7, 32, 32);
+                const top = new THREE.Mesh(sphereGeo, material);
+                top.position.y = 0.5;
+                group.add(top);
+
+                return group;
+            }
+
+            // Create Floating Dice and Pawns
+            for(let i = 0; i < 22; i++) {
+                let mesh;
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                
+                if(Math.random() > 0.6) {
+                    // Dice (Cube)
+                    const geo = new THREE.BoxGeometry(1.5, 1.5, 1.5);
+                    const mat = new THREE.MeshPhongMaterial({ color: 0xffffff, shininess: 50 });
+                    mesh = new THREE.Mesh(geo, mat);
+                } else {
+                    // Pawn
+                    mesh = createPawn(color);
+                }
+
+                // Random positioning
+                mesh.position.x = (Math.random() - 0.5) * 45;
+                mesh.position.y = (Math.random() - 0.5) * 45;
+                mesh.position.z = (Math.random() - 0.5) * 20 - 15;
+
+                // Random rotation
+                mesh.rotation.x = Math.random() * Math.PI;
+                mesh.rotation.y = Math.random() * Math.PI;
+
+                // Animation speeds
+                mesh.userData = {
+                    rx: (Math.random() - 0.5) * 0.01,
+                    ry: (Math.random() - 0.5) * 0.01,
+                    yFloat: (Math.random() - 0.5) * 0.02,
+                    origY: mesh.position.y
+                };
+
+                scene.add(mesh);
+                meshes.push(mesh);
+            }
+
+            camera.position.z = 10;
+
+            // Mouse Interaction
+            let mouseX = 0;
+            let mouseY = 0;
+            let targetX = 0;
+            let targetY = 0;
+            
+            document.addEventListener('mousemove', (event) => {
+                mouseX = (event.clientX - window.innerWidth / 2);
+                mouseY = (event.clientY - window.innerHeight / 2);
+            });
+
+            // Animation Loop
+            const clock = new THREE.Clock();
+
+            function animate() {
+                requestAnimationFrame(animate);
+                const time = clock.getElapsedTime();
+
+                // Ease camera movement
+                targetX = mouseX * 0.001;
+                targetY = mouseY * 0.001;
+                camera.position.x += (targetX - camera.position.x) * 0.05;
+                camera.position.y += (-targetY - camera.position.y) * 0.05;
+                camera.lookAt(scene.position);
+
+                // Animate meshes
+                meshes.forEach((mesh, index) => {
+                    mesh.rotation.x += mesh.userData.rx;
+                    mesh.rotation.y += mesh.userData.ry;
+                    mesh.position.y = mesh.userData.origY + Math.sin(time * 2 + index) * 1.5;
+                });
+
+                renderer.render(scene, camera);
+            }
+
+            animate();
+
+            // Resize Handler
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+
+        // Initialize Three.js on load
+        window.addEventListener('load', initThreeJS);
+
+        // Navbar Scroll Effect
+        const nav = document.querySelector('nav');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                nav.style.padding = '0.5rem 1rem';
+                nav.firstElementChild.classList.add('bg-white/95');
+                nav.firstElementChild.classList.remove('bg-white/65');
+            } else {
+                nav.style.padding = '1rem';
+                nav.firstElementChild.classList.add('bg-white/65');
+                nav.firstElementChild.classList.remove('bg-white/95');
+            }
+        });
+    </script>
+</body>
+</html>
